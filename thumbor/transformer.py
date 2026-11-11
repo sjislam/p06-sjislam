@@ -401,6 +401,11 @@ class Transformer:
                 source_width * self.target_height / source_height + 1e-5
             )
 
+        # never resize to a zero-pixel side; a very wide or very tall source
+        # can round a dimension down to 0 at small target sizes
+        resize_width = max(resize_width, 1)
+        resize_height = max(resize_height, 1)
+
         # ensure that filter should work on the real image size
         # and not on the request size which might be smaller than the
         # resized image in case `full-fit-in` is being used
