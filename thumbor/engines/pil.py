@@ -276,7 +276,21 @@ class Engine(BaseEngine):
                     if pillow_features.check("libimagequant")
                     else None
                 )
+                alpha_mask = None
+                if "A" in self.image.mode:
+                    alpha_mask = self.image.getchannel("A").point(
+                        lambda a: 255 if a == 0 else 0
+                    )
                 self.image = self.image.quantize(method=quantize_method)
+                if (
+                    alpha_mask is not None
+                    and "transparency" not in self.image.info
+                ):
+                    hist = self.image.histogram(alpha_mask)
+                    if any(hist):
+                        self.image.info["transparency"] = max(
+                            range(256), key=lambda i: hist[i]
+                        )
 
         ext = requested_extension or self.get_default_extension()
 
